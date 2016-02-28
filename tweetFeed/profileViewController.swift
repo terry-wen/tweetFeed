@@ -8,7 +8,7 @@
 
 import UIKit
 
-class profileViewController: UIViewController {
+class profileViewController: UIViewController , UITableViewDelegate, UITableViewDataSource{
 
     var tweet: Tweet!
     @IBOutlet weak var profileImageView: UIImageView!
@@ -18,6 +18,10 @@ class profileViewController: UIViewController {
     @IBOutlet weak var followingLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
     @IBOutlet weak var tweetLabel: UILabel!
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    var tweets: [Tweet]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,6 +40,18 @@ class profileViewController: UIViewController {
             profileImageView.clipsToBounds = true
         }
 
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 120
+        TwitterClient.sharedInstance.userTimeline((tweet.username as? String)!, success: { (tweets: [Tweet]) -> () in
+            self.tweets = tweets
+            
+            self.tableView.reloadData()
+            }, failure: { (error: NSError) -> () in
+                print(error.localizedDescription)
+        })
+        
         // Do any additional setup after loading the view.
     }
 
@@ -44,6 +60,21 @@ class profileViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("TweetCell", forIndexPath: indexPath) as! TweetCell
+        
+        cell.tweet = tweets[indexPath.row]
+        
+        return cell
+    }
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if tweets != nil {
+            return tweets.count
+        } else {
+            return 0
+        }
+    }
 
     /*
     // MARK: - Navigation
